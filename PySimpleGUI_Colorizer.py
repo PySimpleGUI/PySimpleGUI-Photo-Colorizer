@@ -109,24 +109,30 @@ while True:
             os.path.join(folder, f)) and f.lower().endswith(img_types)]
         window['-FILE LIST-'].update(fnames)
     elif event == '-FILE LIST-':    # A file was chosen from the listbox
-        filename = os.path.join(values['-FOLDER-'], values['-FILE LIST-'][0])
-        image = cv2.imread(filename)
-        imgbytes_in = cv2.imencode('.png', image)[1].tobytes()
-        window['-IN-'].update(data=imgbytes_in)
-        window['-OUT-'].update(data='')
-        window['-IN FILE-'].update('')
-    elif event == '-PHOTO-':        # Colorize photo button clicked
-        if values['-IN FILE-']:
-            filename = values['-IN FILE-']
-        elif values['-FILE LIST-']:
+        try:
             filename = os.path.join(values['-FOLDER-'], values['-FILE LIST-'][0])
-        else:
+            image = cv2.imread(filename)
+            imgbytes_in = cv2.imencode('.png', image)[1].tobytes()
+            window['-IN-'].update(data=imgbytes_in)
+            window['-OUT-'].update(data='')
+            window['-IN FILE-'].update('')
+        except:
             continue
-        image, colorized = colorize_image(filename)
-        imgbytes_in = cv2.imencode('.png', image)[1].tobytes()
-        imgbytes_out = cv2.imencode('.png', colorized)[1].tobytes()
-        window['-IN-'].update(data=imgbytes_in)
-        window['-OUT-'].update(data=imgbytes_out)
+    elif event == '-PHOTO-':        # Colorize photo button clicked
+        try:
+            if values['-IN FILE-']:
+                filename = values['-IN FILE-']
+            elif values['-FILE LIST-']:
+                filename = os.path.join(values['-FOLDER-'], values['-FILE LIST-'][0])
+            else:
+                continue
+            image, colorized = colorize_image(filename)
+            imgbytes_in = cv2.imencode('.png', image)[1].tobytes()
+            imgbytes_out = cv2.imencode('.png', colorized)[1].tobytes()
+            window['-IN-'].update(data=imgbytes_in)
+            window['-OUT-'].update(data=imgbytes_out)
+        except:
+            continue
     elif event == '-IN FILE-':      # A single filename was chosen
         filename = values['-IN FILE-']
         try:
@@ -150,6 +156,8 @@ while True:
             if event in (None, '-WEBCAM-'): # Clicked the Stop Webcam button or closed window entirely
                 window['-WEBCAM-'].update('Start Webcam')
                 cap.release()
+                window['-IN-'].update('')
+                window['-OUT-'].update('')
                 break
     elif event == '-SAVE-' and colorized is not None:   # Clicked the Save File button
         filename = sg.popup_get_file('Save colorized image as')
