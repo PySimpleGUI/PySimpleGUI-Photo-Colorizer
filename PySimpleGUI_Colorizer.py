@@ -19,9 +19,9 @@ import cv2
 import PySimpleGUI as sg
 import os.path
 
-prototxt = r'model\colorization_deploy_v2.prototxt'
-model = r'model\colorization_release_v2.caffemodel'
-points = r'model\pts_in_hull.npy'
+prototxt = r'model/colorization_deploy_v2.prototxt'
+model = r'model/colorization_release_v2.caffemodel'
+points = r'model/pts_in_hull.npy'
 
 if not os.path.isfile(model):
     sg.popup_scrolled('Missing model file', 'You are missing the file "colorization_release_v2.caffemodel"',
