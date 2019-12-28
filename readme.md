@@ -4,7 +4,7 @@
 
 ## Complete Python Application With GUI Using PySimpleGUI
 
-###___Important___
+### ___Important___
 
 In order to run the demo, you will first need to download the pre-trained data from this location. At 125 MB it's too large to put into the GitHub.  Place the file in the model folder.  
 
