@@ -86,7 +86,7 @@ images_col = [[sg.Text('Input file:'), sg.In(enable_events=True, key='-IN FILE-'
               [sg.Button('Colorize Photo', key='-PHOTO-'), sg.Button('Start Webcam', key='-WEBCAM-'), sg.Button('Save File', key='-SAVE-'), sg.Button('Exit')],
               [sg.Image(filename='', key='-IN-'), sg.Image(filename='', key='-OUT-')],]
 # ----- Full layout -----
-layout = [[sg.Col(left_col), sg.VSeperator(), sg.Col(images_col)]]
+layout = [[sg.Column(left_col), sg.VSeperator(), sg.Column(images_col)]]
 
 # ----- Make the window -----
 window = sg.Window('Photo Colorizer', layout, grab_anywhere=True)
@@ -143,7 +143,7 @@ while True:
         except:
             continue
     elif event == '-WEBCAM-':       # Webcam button clicked
-        window['-WEBCAM-'].update('Stop Webcam')
+        window['-WEBCAM-'].update('Stop Webcam', button_color=('white','red'))
         cap = cv2.VideoCapture(0)
         while True:                 # Loop that reads and shows webcam until stop button
             ret, frame = cap.read()
@@ -154,7 +154,7 @@ while True:
             window['-OUT-'].update(data=imgbytes_out)
             event, values = window.read(timeout=0)
             if event in (None, '-WEBCAM-'): # Clicked the Stop Webcam button or closed window entirely
-                window['-WEBCAM-'].update('Start Webcam')
+                window['-WEBCAM-'].update('Start Webcam', button_color=sg.theme_button_color())
                 cap.release()
                 window['-IN-'].update('')
                 window['-OUT-'].update('')
