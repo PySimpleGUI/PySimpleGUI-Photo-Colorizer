@@ -19,6 +19,8 @@ import cv2
 import PySimpleGUI as sg
 import os.path
 
+version = '9 Feb 2020'
+
 prototxt = r'model/colorization_deploy_v2.prototxt'
 model = r'model/colorization_release_v2.caffemodel'
 points = r'model/pts_in_hull.npy'
@@ -82,7 +84,8 @@ def colorize_image(image_filename=None, cv2_frame=None):
 # First the window layout...2 columns
 
 left_col = [[sg.Text('Folder'), sg.In(size=(25,1), enable_events=True ,key='-FOLDER-'), sg.FolderBrowse()],
-            [sg.Listbox(values=[], enable_events=True, size=(40,20),key='-FILE LIST-')]]
+            [sg.Listbox(values=[], enable_events=True, size=(40,20),key='-FILE LIST-')],
+            [sg.Text('Version ' + version, font='Courier 8')]]
 
 images_col = [[sg.Text('Input file:'), sg.In(enable_events=True, key='-IN FILE-'), sg.FileBrowse()],
               [sg.Button('Colorize Photo', key='-PHOTO-'), sg.Button('Start Webcam', key='-WEBCAM-'), sg.Button('Save File', key='-SAVE-'), sg.Button('Exit')],
