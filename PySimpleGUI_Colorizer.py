@@ -22,7 +22,9 @@ import os.path
 prototxt = r'model/colorization_deploy_v2.prototxt'
 model = r'model/colorization_release_v2.caffemodel'
 points = r'model/pts_in_hull.npy'
-
+points = os.path.join(os.path.dirname(__file__), points)
+prototxt = os.path.join(os.path.dirname(__file__), prototxt)
+model = os.path.join(os.path.dirname(__file__), model)
 if not os.path.isfile(model):
     sg.popup_scrolled('Missing model file', 'You are missing the file "colorization_release_v2.caffemodel"',
                       'Download it and place into your "model" folder', 'You can download this file from this location:\n', r'https://www.dropbox.com/s/dx0qvhhp5hbcx7z/colorization_release_v2.caffemodel?dl=1')
@@ -92,7 +94,7 @@ layout = [[sg.Column(left_col), sg.VSeperator(), sg.Column(images_col)]]
 window = sg.Window('Photo Colorizer', layout, grab_anywhere=True)
 
 # ----- Run the Event Loop -----
-colorized = None
+colorized = cap = None
 while True:
     event, values = window.read()
     if event in (None, 'Exit'):
@@ -116,6 +118,10 @@ while True:
             window['-IN-'].update(data=imgbytes_in)
             window['-OUT-'].update(data='')
             window['-IN FILE-'].update('')
+
+            image, colorized = colorize_image(filename)
+            imgbytes_out = cv2.imencode('.png', colorized)[1].tobytes()
+            window['-OUT-'].update(data=imgbytes_out)
         except:
             continue
     elif event == '-PHOTO-':        # Colorize photo button clicked
@@ -143,26 +149,34 @@ while True:
         except:
             continue
     elif event == '-WEBCAM-':       # Webcam button clicked
+        sg.popup_quick_message('Starting up your Webcam... this takes a moment....', auto_close_duration=1,  background_color='red', text_color='white', font='Any 16')
         window['-WEBCAM-'].update('Stop Webcam', button_color=('white','red'))
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(0) if not cap else cap
         while True:                 # Loop that reads and shows webcam until stop button
-            ret, frame = cap.read()
-            image, colorized = colorize_image(cv2_frame=frame)
-            imgbytes_in = cv2.imencode('.png', image)[1].tobytes()
+            ret, frame = cap.read()     # Read a webcam frame
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # Convert webcam frame to grayscale
+            gray_3_channels = np.zeros_like(frame)          # Convert grayscale frame (single channel) to 3 channels
+            gray_3_channels[:, :, 0] = gray
+            gray_3_channels[:, :, 1] = gray
+            gray_3_channels[:, :, 2] = gray
+            image, colorized = colorize_image(cv2_frame=gray_3_channels)    # Colorize the 3-channel grayscale frame
+            imgbytes_in = cv2.imencode('.png', gray_3_channels)[1].tobytes()
             imgbytes_out = cv2.imencode('.png', colorized)[1].tobytes()
             window['-IN-'].update(data=imgbytes_in)
             window['-OUT-'].update(data=imgbytes_out)
-            event, values = window.read(timeout=0)
-            if event in (None, '-WEBCAM-'): # Clicked the Stop Webcam button or closed window entirely
+            event, values = window.read(timeout=0)  # Update the window outputs and check for new events
+            if event in (None, '-WEBCAM-', 'Exit'): # Clicked the Stop Webcam button or closed window entirely
                 window['-WEBCAM-'].update('Start Webcam', button_color=sg.theme_button_color())
-                cap.release()
                 window['-IN-'].update('')
                 window['-OUT-'].update('')
                 break
     elif event == '-SAVE-' and colorized is not None:   # Clicked the Save File button
-        filename = sg.popup_get_file('Save colorized image as')
-        if filename:
-            cv2.imwrite(filename, colorized)
-        sg.popup_quick_message('Image save complete', background_color='red', text_color='white', font='Any 16')
+        filename = sg.popup_get_file('Save colorized image.\nColorized image be saved in format matching the extension you enter.')
+        try:
+            if filename:
+                cv2.imwrite(filename, colorized)
+                sg.popup_quick_message('Image save complete', background_color='red', text_color='white', font='Any 16')
+        except:
+            sg.popup_quick_message('ERROR - Image NOT saved!', background_color='red', text_color='white', font='Any 16')
 # ----- Exit program -----
 window.close()
