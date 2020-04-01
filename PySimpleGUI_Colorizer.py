@@ -85,6 +85,7 @@ def colorize_image(image_filename=None, cv2_frame=None):
 
 left_col = [[sg.Text('Folder'), sg.In(size=(25,1), enable_events=True ,key='-FOLDER-'), sg.FolderBrowse()],
             [sg.Listbox(values=[], enable_events=True, size=(40,20),key='-FILE LIST-')],
+            [sg.CBox('Convert to gray first',key='-MAKEGRAY-')],
             [sg.Text('Version ' + version, font='Courier 8')]]
 
 images_col = [[sg.Text('Input file:'), sg.In(enable_events=True, key='-IN FILE-'), sg.FileBrowse()],
@@ -122,7 +123,18 @@ while True:
             window['-OUT-'].update(data='')
             window['-IN FILE-'].update('')
 
-            image, colorized = colorize_image(filename)
+            if values['-MAKEGRAY-']:
+                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # Convert webcam frame to grayscale
+                gray_3_channels = np.zeros_like(image)  # Convert grayscale frame (single channel) to 3 channels
+                gray_3_channels[:, :, 0] = gray
+                gray_3_channels[:, :, 1] = gray
+                gray_3_channels[:, :, 2] = gray
+                image, colorized = colorize_image(cv2_frame=gray_3_channels)
+                gray_in = cv2.imencode('.png', gray_3_channels)[1].tobytes()
+                window['-IN-'].update(data=gray_in)
+            else:
+                image, colorized = colorize_image(filename)
+
             imgbytes_out = cv2.imencode('.png', colorized)[1].tobytes()
             window['-OUT-'].update(data=imgbytes_out)
         except:
