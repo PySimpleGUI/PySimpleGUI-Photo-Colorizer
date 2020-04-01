@@ -19,7 +19,7 @@ import cv2
 import PySimpleGUI as sg
 import os.path
 
-version = '9 Feb 2020'
+version = '1 April 2020'
 
 prototxt = r'model/colorization_deploy_v2.prototxt'
 model = r'model/colorization_release_v2.caffemodel'
