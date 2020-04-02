@@ -19,7 +19,7 @@ import cv2
 import PySimpleGUI as sg
 import os.path
 
-version = '1 April 2020'
+version = '2 April 2020'
 
 prototxt = r'model/colorization_deploy_v2.prototxt'
 model = r'model/colorization_release_v2.caffemodel'
@@ -79,6 +79,16 @@ def colorize_image(image_filename=None, cv2_frame=None):
     colorized = (255 * colorized).astype("uint8")
     return image, colorized
 
+
+def convert_to_grayscale(frame):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # Convert webcam frame to grayscale
+    gray_3_channels = np.zeros_like(frame)  # Convert grayscale frame (single channel) to 3 channels
+    gray_3_channels[:, :, 0] = gray
+    gray_3_channels[:, :, 1] = gray
+    gray_3_channels[:, :, 2] = gray
+    return gray_3_channels
+
+
 # --------------------------------- The GUI ---------------------------------
 
 # First the window layout...2 columns
@@ -98,7 +108,7 @@ layout = [[sg.Column(left_col), sg.VSeperator(), sg.Column(images_col)]]
 window = sg.Window('Photo Colorizer', layout, grab_anywhere=True)
 
 # ----- Run the Event Loop -----
-colorized = cap = None
+prev_filename = colorized = cap = None
 while True:
     event, values = window.read()
     if event in (None, 'Exit'):
@@ -118,25 +128,18 @@ while True:
         try:
             filename = os.path.join(values['-FOLDER-'], values['-FILE LIST-'][0])
             image = cv2.imread(filename)
-            imgbytes_in = cv2.imencode('.png', image)[1].tobytes()
-            window['-IN-'].update(data=imgbytes_in)
+            window['-IN-'].update(data=cv2.imencode('.png', image)[1].tobytes())
             window['-OUT-'].update(data='')
             window['-IN FILE-'].update('')
 
             if values['-MAKEGRAY-']:
-                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # Convert webcam frame to grayscale
-                gray_3_channels = np.zeros_like(image)  # Convert grayscale frame (single channel) to 3 channels
-                gray_3_channels[:, :, 0] = gray
-                gray_3_channels[:, :, 1] = gray
-                gray_3_channels[:, :, 2] = gray
+                gray_3_channels = convert_to_grayscale(image)
+                window['-IN-'].update(data=cv2.imencode('.png', gray_3_channels)[1].tobytes())
                 image, colorized = colorize_image(cv2_frame=gray_3_channels)
-                gray_in = cv2.imencode('.png', gray_3_channels)[1].tobytes()
-                window['-IN-'].update(data=gray_in)
             else:
                 image, colorized = colorize_image(filename)
 
-            imgbytes_out = cv2.imencode('.png', colorized)[1].tobytes()
-            window['-OUT-'].update(data=imgbytes_out)
+            window['-OUT-'].update(data=cv2.imencode('.png', colorized)[1].tobytes())
         except:
             continue
     elif event == '-PHOTO-':        # Colorize photo button clicked
@@ -147,38 +150,35 @@ while True:
                 filename = os.path.join(values['-FOLDER-'], values['-FILE LIST-'][0])
             else:
                 continue
-            image, colorized = colorize_image(filename)
-            imgbytes_in = cv2.imencode('.png', image)[1].tobytes()
-            imgbytes_out = cv2.imencode('.png', colorized)[1].tobytes()
-            window['-IN-'].update(data=imgbytes_in)
-            window['-OUT-'].update(data=imgbytes_out)
+            if values['-MAKEGRAY-']:
+                gray_3_channels = convert_to_grayscale(cv2.imread(filename))
+                window['-IN-'].update(data=cv2.imencode('.png', gray_3_channels)[1].tobytes())
+                image, colorized = colorize_image(cv2_frame=gray_3_channels)
+            else:
+                image, colorized = colorize_image(filename)
+                window['-IN-'].update(data=cv2.imencode('.png', image)[1].tobytes())
+            window['-OUT-'].update(data=cv2.imencode('.png', colorized)[1].tobytes())
         except:
             continue
     elif event == '-IN FILE-':      # A single filename was chosen
         filename = values['-IN FILE-']
-        try:
-            image = cv2.imread(filename)
-            imgbytes_in = cv2.imencode('.png', image)[1].tobytes()
-            window['-IN-'].update(data=imgbytes_in)
-            window['-OUT-'].update(data='')
-        except:
-            continue
+        if filename != prev_filename:
+            prev_filename = filename
+            try:
+                image = cv2.imread(filename)
+                window['-IN-'].update(data=cv2.imencode('.png', image)[1].tobytes())
+            except:
+                continue
     elif event == '-WEBCAM-':       # Webcam button clicked
         sg.popup_quick_message('Starting up your Webcam... this takes a moment....', auto_close_duration=1,  background_color='red', text_color='white', font='Any 16')
         window['-WEBCAM-'].update('Stop Webcam', button_color=('white','red'))
         cap = cv2.VideoCapture(0) if not cap else cap
         while True:                 # Loop that reads and shows webcam until stop button
             ret, frame = cap.read()     # Read a webcam frame
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # Convert webcam frame to grayscale
-            gray_3_channels = np.zeros_like(frame)          # Convert grayscale frame (single channel) to 3 channels
-            gray_3_channels[:, :, 0] = gray
-            gray_3_channels[:, :, 1] = gray
-            gray_3_channels[:, :, 2] = gray
+            gray_3_channels = convert_to_grayscale(frame)
             image, colorized = colorize_image(cv2_frame=gray_3_channels)    # Colorize the 3-channel grayscale frame
-            imgbytes_in = cv2.imencode('.png', gray_3_channels)[1].tobytes()
-            imgbytes_out = cv2.imencode('.png', colorized)[1].tobytes()
-            window['-IN-'].update(data=imgbytes_in)
-            window['-OUT-'].update(data=imgbytes_out)
+            window['-IN-'].update(data=cv2.imencode('.png', gray_3_channels)[1].tobytes())
+            window['-OUT-'].update(data=cv2.imencode('.png', colorized)[1].tobytes())
             event, values = window.read(timeout=0)  # Update the window outputs and check for new events
             if event in (None, '-WEBCAM-', 'Exit'): # Clicked the Stop Webcam button or closed window entirely
                 window['-WEBCAM-'].update('Start Webcam', button_color=sg.theme_button_color())
