@@ -19,7 +19,7 @@ import cv2
 import PySimpleGUI as sg
 import os.path
 
-version = '2 April 2020'
+version = '7 June 2020'
 
 prototxt = r'model/colorization_deploy_v2.prototxt'
 model = r'model/colorization_release_v2.caffemodel'
@@ -186,7 +186,7 @@ while True:
                 window['-OUT-'].update('')
                 break
     elif event == '-SAVE-' and colorized is not None:   # Clicked the Save File button
-        filename = sg.popup_get_file('Save colorized image.\nColorized image be saved in format matching the extension you enter.')
+        filename = sg.popup_get_file('Save colorized image.\nColorized image be saved in format matching the extension you enter.', save_as=True)
         try:
             if filename:
                 cv2.imwrite(filename, colorized)
