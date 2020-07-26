@@ -83,3 +83,21 @@ Here is more eye-candy courtesy of Deep Learning
 ![SNAG-0626](https://user-images.githubusercontent.com/46163555/71523945-43c03a00-2899-11ea-8bf2-ee6ac2216286.jpg)
 
 ![SNAG-0620](https://user-images.githubusercontent.com/46163555/71523946-43c03a00-2899-11ea-9f25-2f2b2c882ad3.jpg)
+
+
+-----------------------------------
+
+# Webcam Multi-Window Demo
+
+In July 2020 a new demo was added that uses the new (released to GitHub only at this point) multi-window support.  This demo shows 3 video windows:
+
+1. Your webcam's raw video stream
+2. Grayscale version of the video
+3. Fully colorized colored of the grayscale video
+
+Here's a screenshot to give you a rough idea of what to expect from the demo.  The colors likely didn't do so well in this specific shot as there was a lot of background lighting.
+
+![SNAG-0881](https://user-images.githubusercontent.com/46163555/88486988-9e189a80-cf4f-11ea-8dc7-727b7539bab9.jpg)
+
+
+You will need to use the PySimpleGUI.py file from the project's GitHub http://www.PySimpleGUI.com.  Minimum version is 4.26.0.13.
