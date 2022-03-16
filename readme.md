@@ -32,12 +32,12 @@ https://www.pyimagesearch.com/2019/02/25/black-and-white-image-colorization-with
 
 ## Using the GUI
 
-To use the GUI you'll need to install PySimpleGUI (http://www.PySimpleGUI.org for instructions)
+To use the GUI you'll need to install the dependencies specified in the
+`requirements.txt`. One of these will install them for you.
 
-One of these will install it for you.
 ```
-pip install PySimpleGUI
-pip3 install PySimpleGUI
+pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 Then you run the demo program using either `python` or `python3` dependind on your system:
