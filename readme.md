@@ -33,7 +33,7 @@ https://www.pyimagesearch.com/2019/02/25/black-and-white-image-colorization-with
 ## Using the GUI
 
 To use the GUI you'll need to install the dependencies specified in the
-`requirements.txt`. One of these will install them for you.
+`requirements.txt` file. One of these will install them for you.
 
 ```
 pip install -r requirements.txt
